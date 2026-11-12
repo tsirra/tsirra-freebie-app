@@ -1,0 +1,805 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Tsirra</title>
+<style>
+:root{--bg:oklch(0.975 0.01 75);--fg:oklch(0.26 0.02 40);--mut:oklch(0.45 0.02 40);--card:oklch(0.995 0.005 75);--ac:oklch(0.52 0.11 40);--ln:oklch(0.88 0.015 60);--sf:oklch(0.94 0.025 50);--sg:oklch(0.93 0.03 145)}
+@media(prefers-color-scheme:dark){:root{--bg:oklch(0.22 0.015 40);--fg:oklch(0.95 0.01 75);--mut:oklch(0.76 0.02 60);--card:oklch(0.27 0.018 40);--ac:oklch(0.76 0.09 45);--ln:oklch(0.37 0.02 40);--sf:oklch(0.31 0.02 40);--sg:oklch(0.3 0.03 145)}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.65 system-ui,sans-serif}
+main{max-width:640px;margin:0 auto;padding:20px 16px 60px}h1{font:600 1.65rem/1.25 Georgia,serif;margin:.2em 0 .4em}h2{font:600 1.05rem Georgia,serif;margin:1em 0 .2em}
+.card{background:var(--card);border:1px solid var(--ln);border-radius:14px;padding:18px;margin:14px 0}
+.m{color:var(--mut);font-size:.88rem}.n{background:var(--sf);border-radius:10px;padding:10px 14px;margin:10px 0}
+button{font:inherit;padding:10px 16px;border-radius:999px;border:1px solid var(--ac);background:none;color:var(--ac);cursor:pointer;margin:4px 6px 4px 0}
+button.p{background:var(--ac);color:var(--card)}button:disabled{opacity:.4;cursor:default}button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
+input[type=text],input[type=date],textarea,select{width:100%;font:inherit;padding:10px;border:1px solid var(--ln);border-radius:10px;background:var(--bg);color:var(--fg)}
+label{display:block;margin:8px 0}details{margin:8px 0}summary{cursor:pointer;color:var(--ac)}
+pre{white-space:pre-wrap;background:var(--sf);padding:10px;border-radius:10px;font:inherit;margin:6px 0}
+.dots span{display:inline-block;width:34px;height:5px;border-radius:3px;background:var(--ln);margin-right:5px}.dots .on{background:var(--ac)}
+.hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}.pvb{text-align:center;padding:8px;background:var(--sf)}.pvb button{padding:6px 14px;margin:2px}
+body.pp #frame,body.pt #frame,body.pl #frame{margin:12px auto;border:10px solid var(--fg);border-radius:34px;overflow:auto;background:var(--bg);max-width:100%}
+body.pp #frame{width:390px;height:760px}body.pt #frame{width:768px;height:900px;border-radius:24px}body.pl #frame{width:1280px;height:760px;border-radius:12px;border-width:8px 8px 22px}
+.br{font:600 1.1rem Georgia,serif;letter-spacing:.3em;text-transform:uppercase;text-align:center;color:var(--ac);margin:2px 0 10px}#gn{background:var(--sg)}
+html{-webkit-text-size-adjust:100%}html,body{overflow-x:hidden}main{min-width:0;padding-left:max(14px,env(safe-area-inset-left));padding-right:max(14px,env(safe-area-inset-right));padding-bottom:calc(60px + env(safe-area-inset-bottom))}.card,.n,label,p,li,h1,h2{overflow-wrap:anywhere}
+@media(max-width:640px){main{padding-top:14px}h1{font-size:1.4rem}.card{padding:14px}button{min-height:44px}.pvb{display:none}input[type=text],input[type=date],textarea,select{font-size:16px}.hd button{padding:10px 12px}}
+</style></head><body><div id="pv"></div><div id="frame"><main id="app"></main></div><script>
+const $=s=>document.querySelector(s),E=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const KEY='otd2',td=()=>new Date().toLocaleDateString('en-CA');
+const TP=[['Planner or journal (printable)','p'],['Tracker or habit sheet','p'],['Worksheets or workbook','p'],['Checklist or cheat sheet','p'],['Wall art or poster','p'],['Stickers or planner pages','p'],['Cards or invitations','p'],
+['Canva template','t'],['Notion template','t'],['Spreadsheet template (Excel or Sheets)','t'],['Resume or CV template','t'],['Social media template pack','t'],['Slide or presentation template','t'],['Digital planner (tablet)','t'],
+['Ebook','w'],['Guide or how-to PDF','w'],['Mini course or email course','w'],['Swipe file or prompt pack','w'],['Meal plan or workout plan','w'],
+['Clipart, icons or illustrations','a'],['SVG or cut files','a'],['Patterns or backgrounds','a'],['Fonts','a'],['Photo presets or stock photos','a'],
+['Audio (meditations, music, sounds)','m'],['Video tutorial or workshop','m'],
+['Mini web app or online tool','s'],['Spreadsheet tool with formulas','s'],['Browser extension or plugin','s'],['Something else','p']];
+const FAM={p:['Every outlined page is made','Readable when printed (A4 or Letter)','Saved as one PDF','Title and your name on page 1'],
+t:['Every outlined page or element is made','Placeholders are clearly marked','Saved as an editable file or shareable template link','A short how-to-edit page is included'],
+w:['Every outlined section is written','Read once, fixing only obvious mistakes','Title page and contents list','Exported as one file'],
+a:['Every item in the set is finished','Files are named clearly','Exported in the formats you promise','Bundled into one download'],
+m:['Every outlined part is recorded','Sound or picture is clear enough to follow','Exported or hosted at a private link','A one-page "how to use" is included'],
+s:['The main thing it does works from start to finish','It works on a phone and a laptop','A first-time user finds the main action without help','A buyer can reach it by a link or file']};
+const STG=['Choose a direction','Check it is worth making','Create the first version','Set up selling','Get it in front of buyers','Work toward your first sale'];
+const tn=()=>(TP[st.ti]||TP[0])[0].toLowerCase(),fam=()=>(TP[st.ti]||TP[0])[1];
+const ACTS=[
+{id:'dir',s:0,t:'Write one sentence: what it is, who it is for, and what it helps with',fr:'Decision',min:10,pre:[],
+why:'Everything later is built from this sentence.',done:['Names one product','Names one specific buyer, not "everyone"','Says the problem it solves or the result they want'],
+ex:'EXAMPLE only: "A 7-day dinner planner for busy moms tired of deciding what to cook."',tpl:'A {type} that helps [specific buyer] to [result they want].',
+know:'It can change later. It only has to be clear enough to start.',good:'One sentence. No research yet.',def:'Unsure? Choose the buyer you understand best (often someone like you a year ago) and the smallest product that helps her. Choose now and move on.',
+steps:['Name the buyer in 3 to 5 words.','Name the result they want.','Join them in the template.'],lad:['Write the full sentence.','Write the buyer and result as two phrases.','Write only who it is for.'],
+nx:'You have a clear direction. Next: find out if people want it.'},
+{id:'val',s:1,t:'Find evidence that people want this',fr:'Knowledge + exposure',min:30,pre:['dir'],
+why:'This is how you avoid spending weeks on something nobody wants.',
+done:['Wrote down a few examples and labeled each: similar product selling, someone asked for it, someone said they would use it, or someone paid','Wrote one line on what this tells you to include or change','Made a decision to go ahead, adjusting the details of your product if needed'],
+ex:'EXAMPLE only: "Similar planners have many reviews (similar product selling). A group member asked for one (someone asked). A friend said she would use it (interest only). Reviews say: too many pages."',tpl:'Example 1 + type:\nExample 2 + type:\nExample 3 + type:\nWhat this tells me:\nMy decision:',
+know:'These are different strengths: a similar product with real sales or reviews is a signal; strangers asking for it is stronger; someone paying is strongest. Friends saying yes is the weakest. Finding nothing does not prove the idea is bad, and finding something does not guarantee sales. This gives you a better guess, not proof.',good:'A few labeled examples and a decision. Three is a stopping point, not a pass mark.',def:'No evidence yet? Ask a few people who fit your buyer (not only friends): "Would this help you, and what would you want in it?"',
+res:{find:'Whether people already buy or ask for something like this',ok:'A few concrete examples, each labeled by type',stop:'30 minutes of looking. Then decide.'},
+steps:['Search where your buyer shops or asks for things.','Note 3 examples.','Pick go, adjust or change.'],lad:['Collect 3 pieces of evidence and decide.','Find 1 example and ask 1 person.','Ask 1 person who fits your buyer.'],
+nx:'You decided with evidence. Next: list what the buyer needs inside it.'},
+{id:'outline',s:2,t:'List what the buyer needs inside it',fr:'Creation',min:15,pre:['val'],
+why:'A list turns "make a product" into pieces you can finish.',done:['5 to 10 items listed','Each item helps deliver the result you promised the buyer','Optional extras are moved to a "later" list','Items are in order'],
+ex:'EXAMPLE only (dinner planner): cover, weekly grid, shopping list, 10 easy dinners.',tpl:'1.\n2.\n3.\n4.\n5.',know:'Include only what the buyer needs to get the result you promised. Extras, bonuses and bundles can wait until people have bought.',good:'Rough wording is fine.',def:'Aim for about 5 items. If unsure whether something is essential, ask: would the buyer be stuck without it?',
+steps:['Write what the buyer wants to do.','List what helps with each.','Cut anything optional.'],lad:['Write all items in order.','Write 5 items.','Write the first 3.'],nx:'You have a list. Next: make the first version.'},
+{id:'make',s:2,t:'Make the first sellable version',fr:'Creation',min:45,pre:['outline'],
+why:'Nothing can be sold until the product exists.',done:null,ex:'EXAMPLE only: a finished file where each part matches one item on your list.',tpl:'[item from your list] -> made / not made',
+know:'Use a tool you already know. Plain and finished beats fancy and unfinished.',good:'Every box ticked means ready. Polish can wait for buyer feedback.',def:'One font, two colors, nothing extra.',
+steps:['Open your list.','Make each item, plainly.','Export and open the result.'],lad:['Finish the whole thing.','Finish half the items, fully.','Make the first item, fully.'],nx:'You have a product. Next: check that it works for a buyer.'},
+{id:'ready',s:2,t:'Check it works for a buyer',fr:'Technical + decision',min:20,pre:['make'],
+why:'A finished product is not always a sellable one.',done:null,rd:1,
+ex:'EXAMPLE only: open the final file on a different device and compare it with your list and your listing.',tpl:'Opened on: \nProblems found: \nFixed: ',know:'You are checking whether it works, not whether it is perfect.',good:'It opens, makes sense, and has no obvious faults.',def:'No second device? Ask one person to open it and tell you what confused them.',
+steps:['Open it on another device.','Note anything unclear.','Fix only what blocks a buyer.'],lad:['Do the full check and fix.','Open it on another device.','Ask one person to open it.'],nx:'It is ready to sell. Next: choose how people will buy it.'},
+{id:'route',s:3,t:'Choose how customers will pay and receive it',fr:'Decision + technical setup',min:30,pre:['val'],blk:1,
+why:'Buyers need a way to pay and a way to get the product. You may not need a full website.',
+done:['One route chosen','Confirmed on its official pages that you can register from your country and publish a product','Confirmed it can accept customer payments (which methods and currencies buyers can use)','Confirmed you can withdraw your earnings to an account you can access, and noted the fees and timing','Confirmed how the product is delivered to the buyer, and noted any monthly or per-sale costs','Account or link created'],
+ex:'EXAMPLE only: a marketplace, a payment-link tool, or a shop builder.',tpl:'Chosen route: \nRegister from my country (yes/no/unclear): \nAccept payments (yes/no/unclear): \nWithdraw earnings (yes/no/unclear): \nFees and timing: \nDelivery method: ',
+know:'Being able to register is not the same as being able to get paid. Rules, fees and country support change, so check the provider\'s official pages yourself. The app cannot confirm any of it.',good:'A clear answer on every check above, and a working account. If something is unclear, do not guess.',def:'If two routes both pass every check, choose the simpler one. Never choose before the checks.',
+res:{find:'What the official help or terms pages say about registering from your country, accepting payments, withdrawing earnings, delivery and fees',ok:'A clear answer on each point, or a note that it is unclear',stop:'30 minutes per route. If a key point stays unclear, treat the route as unconfirmed and use "Something is missing or in the way".'},
+steps:['List 2 routes.','Check country and payout on each.','Set up the first that says yes.'],lad:['Choose, check and set up.','Shortlist 2 and check one.','Write what the route must do.'],nx:'You have a way to take payment. Next: write the listing.'},
+{id:'listing',s:3,t:'Write the listing or sales message',fr:'Creation + exposure',min:30,pre:['ready','route'],
+why:'This is what a stranger reads before buying.',done:['Title says what it is and who it is for','3 to 5 lines of description','3 benefits','What is included','Any limits or requirements (software needed, file type, print size)','Everything stated is true of the actual product, with no promised results','A price','One image of the product'],
+ex:'EXAMPLE only: "7-Day Dinner Planner for Busy Moms (printable)". Benefits: plan in 10 minutes; shop once; stop the 5pm panic.',tpl:'Title: {idea} for {buyer}\nDescription:\nBenefits:\n{step}\nIncluded: {type}\nPrice:',
+know:'Say what it does for the buyer before describing the product. Describe only what the product really contains, and do not promise results such as income or health outcomes.',good:'All parts present, and accurate, means ready to publish.',def:'Look at a few comparable products and compare what the buyer gets, not just the price. Choose a price you can defend for your product\'s scope. You can change it after real responses.',low:'Write it as a private draft first. Nobody sees it until you choose.',
+step:{t:'Write 3 things the buyer will be able to do',d:['3 sentences starting with "You can..."']},alt:{t:'Write a short sales message instead',done:['One title line','3 lines on what it is and what they get','A price','A link or way to buy']},
+steps:['Write the title.','Write 3 benefits.','Add price and an image.'],lad:['Complete all parts.','Title, description and 3 benefits.','Title and 1 benefit.'],nx:'The listing exists. Next: do a test purchase.'},
+{id:'buytest',s:3,t:'Do a test purchase',fr:'Technical setup',min:20,one:1,pre:['route','listing'],blk:1,
+why:'If buying or delivery is broken, you should find out before a customer does.',done:['The listing or link is live','You checked how delivery works, using a safe method (see "If you cannot decide")','You saw what the buyer receives, and it opens'],
+ex:'EXAMPLE only: use the provider\'s preview or test option if it has one, then open what the buyer receives.',tpl:'Link: \nBought as: \nOpened: yes/no',know:'Some providers offer a preview, test mode, or free or discounted option. Not all do, so check their help pages. Do not spend money until you know the fees and refund rules.',good:'You have seen what a buyer receives, and it works.',def:'No safe way to test? Check whether the provider allows buying your own product. If a real purchase is the only way, use the lowest price, check the fees first, and expect that you may not get everything back.',
+steps:['Open your listing.','Buy it.','Open what arrives.'],lad:['Run the full test.','Publish and copy the link.','Find the provider\'s test-purchase help.'],nx:'Buying works. Next: choose how to reach buyers.'},
+{id:'reach',s:4,t:'Choose one realistic way to reach buyers and write your message',fr:'Decision + exposure',min:25,pre:['buytest'],
+why:'A good product with no audience does not sell.',done:['Chose ONE place where your buyer already is (people you know, a group, one social account, a forum)','Checked that place\'s rules on sharing your own products','Wrote a message with the link'],
+ex:'EXAMPLE only: "Hi, I made a dinner planner for busy moms. Would you look at it and tell me honestly if it would help? [link]"',tpl:'Place: \nRules checked: yes/no\nMessage: Hi, I made {idea} for {buyer}. It helps you [result]. [link]',
+know:'You do not need many channels. One place where your buyer already is beats five where she is not. If public posting feels uncomfortable, private messages to a few people who fit are a valid first test.',good:'One place, one message.',def:'Start with people who fit your buyer and would give honest feedback. Do not send the same message to many strangers or repost where promotion is not allowed.',low:'Start with ONE kind person. A private message counts.',
+steps:['Think of where your buyer talks.','Check its rules.','Write the message.'],lad:['Choose the place and write the message.','Choose the place.','List 3 people who fit your buyer.'],nx:'You have a place and a message. Next: send it.'},
+{id:'send',s:4,t:'Put the offer in front of people',fr:'Exposure',min:15,pre:['reach'],
+why:'Nobody can buy what they have not seen.',done:['Sent or posted the message in your chosen place','Wrote down where, when, and roughly how many people it reached (or "unknown")'],
+ex:'EXAMPLE only: "Sent to 4 friends on Monday; posted once in a group; reach unknown."',tpl:'Where: \nWhen: \nApproximate reach: ',know:'Preparing a message is not the same as sending it. One post or message will not guarantee a sale, and early silence does not mean the product is bad.',good:'Sent once is done.',def:'Send now, not when it is perfect.',low:'Send it to ONE person. Then decide about the next.',
+steps:['Open the place.','Paste the message.','Send and write down where.'],lad:['Send it.','Send to one person.','Open the message and read it once more.'],nx:'The offer is out. Next: say what you have seen.'},
+{id:'obs',s:5,t:'Say what you have seen so far',fr:'Decision',min:5,pre:['send'],obs:1,why:'Your next step depends on what actually happened.'}];
+const EXP={unseen:{t:'Show the offer in one new place',why:'If few people saw it, it has not really been tested.',done:['Picked one new place where your buyer is','Checked its rules about sharing','Shared it once with one sentence on who it helps','Wrote down where and when'],tpl:'Hi, I made {idea} for {buyer}. Link: [link]',know:'Reach people who fit your buyer before changing anything.'},
+ignored:{t:'Work out why people did not respond',why:'No response has several possible causes. This step picks one to test.',done:['Checked that the people you reached fit your buyer','Checked that your message says what it is, who it is for, and includes the link','Changed ONE thing (who you reached or how you said it) and tried with new people','Wrote down what happened'],tpl:'What I changed:\nWho I tried it with:\nWhat happened:',know:'Silence does not prove the opening line, or the product, is bad. Change one thing at a time, or you will not know what worked.'},
+nobuy:{t:'Find out what stopped interested people',why:'Interest without a purchase can have many causes. Do not assume it is the price.',done:['If someone showed interest, asked them kindly what held them back (or noted that you could not ask)','Picked ONE possible cause: unclear listing, price, trust, hard to buy, or not the right buyer','Made one change for it and checked the buying steps still work'],tpl:'What I learned or suspect:\nChange I made:',know:'One person is a clue, not a rule. Pick the cause you have most reason to believe, not all of them.'},
+told:{t:'Act on what someone told you',why:'A real reason beats a guess.',done:['Wrote their words down exactly','Decided what to change: the product details, the listing, or the price','Made that one change'],tpl:'What they said:\nMy change:',know:'One person is a clue, not a rule. Look for the same reason twice.'},
+unknown:{t:'Find out what you cannot see',why:'You cannot decide without information.',done:['Wrote what you cannot see (e.g. views, clicks)','Chose one way to see it (a counter, or asking 3 people)','Set a date to look again'],tpl:'I cannot see:\nHow I will find out:\nCheck on:',know:'Not every place shows numbers. Asking 3 people directly also works.'}};
+const OBS=[['unseen','I do not think many people have seen it'],['ignored','People saw it but nobody replied or clicked'],['nobuy','People looked, clicked or said they were interested, but did not buy'],['told','Someone told me why they did not buy'],['unknown','I cannot tell, there is not enough information'],['sale','I made a sale']];
+const BL={platform:'Look for a different type of route and check its own country and payout page. The app cannot verify availability.',payment:'Look for another way to be paid that the provider says works where you live. The app cannot verify this.',tool:'Name what you need. Then look for a free or simpler way to get the same result, such as a free plan, paper draft, or phone.',afford:'Check whether a free option can do the same job, or whether the task can be done a different way. Only pay if it is truly required, and check the full cost first.',asset:'Make the smallest plain version of the missing item yourself.',equip:'Work in short offline pieces. Use the 5-minute option.',other:'Write it in one sentence. The app cannot solve this one. Work on something that does not depend on it.'};
+const BLN={platform:'The route I wanted is not available to me',payment:'A payment or payout method is not supported',tool:'I am missing a tool or resource',afford:'I cannot afford the next step',asset:'I am missing a file or asset',equip:'My internet or equipment is unreliable',other:'Something else'};
+let PV='',SP=false,hist=[];function pvBar(){if(SP)$('#pv').innerHTML=`<div class=pvb>Preview: ${[['','Full'],['pp','Phone'],['pt','Tablet'],['pl','Laptop']].map(([c,t])=>`<button class="${PV===c?'p':''}" onclick="setPv('${c}')">${t}</button>`).join('')}</div>`}
+function setPv(c){PV=c;document.body.className=c;pvBar()}
+let st=load(),gap=0,sv=null,ob={step:0,help:0,have:[]},T0=td();
+function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.v===2&&s.a&&typeof s.a==='object')return s}catch(e){}return null}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){window.NS=1}}
+const A=id=>st.a[id]||(st.a[id]={checks:[],draft:'',misses:0});
+const X=id=>ACTS.find(x=>x.id===id);
+const ea=x=>{const a=A(x.id);if(a.alt&&x.alt)x=Object.assign({},x,x.alt);if(a.claimed&&x.id==='route'&&!a.done)x=Object.assign({},x,{t:'Confirm your selling route can pay you out',why:'You said you already set this up. Confirm each point before relying on it.'});return x};
+const RDY={p:['Opened the final file on a second device or app','Content matches your list and your listing','Checked the print size with a print preview or test print','No leftover placeholder or sample text'],t:['Opened it through a fresh link or file, as a buyer would','Placeholders can be edited','The instructions explain how to use it','No leftover sample content'],w:['Opened the final file on a second device','Content matches your list, with no gaps','Contents list and links work'],a:['Files open in the programs you promise','Names and formats match your description','Usage terms are stated'],m:['Plays on a second device','Sound or picture is clear from start to finish','The download or stream link works'],s:['Works on a phone and a laptop','The main action works on a fresh visit','A buyer can reach it by the link or file you will sell']};
+const KM={p:'Make every page the same size (A4 or Letter, and say which in the listing). Check the text is readable at print size.',t:'Buyers need a working copy they can edit. Mark placeholders clearly and add a short how-to page.',w:'Write the whole thing, then read it once for gaps. Export to a format that opens everywhere, such as PDF.',a:'Export exactly the formats and sizes you will promise, and open each file to check it.',m:'Record the whole thing before editing. Check playback on another device and decide how buyers will receive large files.',s:'Only promise what works. Make the main action work reliably before adding anything else.'};const KN=x=>x.id==='make'?KM[fam()]:x.know;
+const DL=x=>x.done||(x.rd?RDY[fam()]:FAM[fam()]);
+const F=(s,a)=>String(s||'').replace(/\{idea\}/g,st.idea||'your product').replace(/\{buyer\}/g,st.buyer||'your buyer').replace(/\{type\}/g,tn()).replace(/\{step\}/g,(a&&a.stepText)||'[3 things the buyer can do]');
+const PR=['platform','payment'];
+const expA=()=>st.exp&&EXP[st.exp]?Object.assign({id:'exp',s:5,fr:'Decision',min:20,pre:[],ex:'',good:'Do what is on the list. Then come back and say what happened.',def:'Not sure? Pick the simplest option.',steps:['Read the list.','Do the first item.','Tick as you go.'],lad:['Do the whole list.','Do the first two items.','Do the first item.']},EXP[st.exp]):null;
+const blocked=x=>st.blocker&&(PR.includes(st.blocker.t)?x.blk:st.blocker.a===x.id);
+const next=()=>expA()||ACTS.find(x=>!A(x.id).done&&x.pre.every(p=>A(p).done)&&!blocked(x));
+const mins=()=>st.tm&&st.tm.d===td()?st.tm.m:(st.mins||15);
+function go(v,np){const same=st.view===v;if(v==='home'&&!np)hist=[];else if(!np&&!same){hist.push(st.view);try{history.pushState(null,'')}catch(e){}}st.view=v;save();render(same)}
+function canBack(){return st?true:(ob.step>0||!!ob.keep)}
+function backNav(){
+ if(!st){if(ob.step>0)return ob_back();if(ob.keep){st=ob.keep;ob={step:0,help:0,have:[]};return go('home',1)}return}
+ if(st.view==='stuck'&&sv){sv=sv==='blk'?'miss':null;return render()}
+ if(hist.length)return go(hist.pop(),1);
+ if(st.view!=='home')return go('home',1);
+ if(A('obs').done){A('obs').done=0;return go('home',1)}
+ if(st.exp){st.exp=null;return go('home',1)}
+ const ord=(st.order||[]).filter(i=>X(i)&&A(i).done);let id=ord.length?ord[ord.length-1]:null;
+ if(!id){const dn=ACTS.filter(a=>A(a.id).done&&!a.obs);id=dn.length?dn[dn.length-1].id:null}
+ if(id){if(st.order)st.order=st.order.filter(i=>i!==id);A(id).done=0;return go('home',1)}
+ ob={step:3,redo:1,keep:st,idea:st.idea,buyer:st.buyer,ti:st.ti,mins:st.mins,route:st.route,have:[]};st=null;render()}
+function piece(id){A(id).part=(A(id).part||0)+1;go('home')}
+function reopen(id){A(id).done=0;go('home')}
+function boot(){try{localStorage.setItem('otd_t','1');localStorage.removeItem('otd_t')}catch(e){window.NS=1}pvBar();const T=td();if(st){if(st.last&&st.last!==T){gap=Math.round((new Date(T)-new Date(st.last))/864e5);const o=st.offered&&st.a[st.offered];if(o&&!o.done&&!(st.pause&&st.pause>T))o.misses++}st.last=T;if(['stuck','fin'].includes(st.view))st.view='home';save()}render()}
+function render(keep){const m=$('#app');if(!st)m.innerHTML=`<div class=br>Tsirra</div><div class=hd>${canBack()?'<button onclick=backNav()>&larr; Back</button>':'<span></span>'}<span></span></div>`+onb();else{m.innerHTML=`<div class=br>Tsirra</div><div class=hd>${canBack()?'<button onclick=backNav()>&larr; Back</button>':'<span></span>'}<button onclick="go('settings')">Edit my answers</button></div>`+({home,stuck,settings,fin:finV}[st.view]||home)()}if(!keep){window.scrollTo(0,0);$('#frame').scrollTop=0}}
+function onb(){const s=ob.step,v=(k)=>E(ob[k]||''),nxt=s<3?'Next':'Show me my first step';let h=`<p class=m>Step ${s+1} of 4. ${window.NS?'Your browser is blocking storage, so progress will not be saved.':'Everything stays in this browser.'}</p>`;
+ if(s===0){
+  h+=`<h1>What do you want to make?</h1><div class=card><input type=text id=idea value="${v('idea')}" placeholder="e.g. a weekly dinner planner"><label>Who is it for?<input type=text id=buyer placeholder="e.g. busy moms with toddlers" value="${v('buyer')}"></label></div>`}
+ if(s===1)h+=`<h1>What kind of product is it?</h1><div class=card><select id=ti>${TP.map((t,i)=>`<option value=${i} ${+ob.ti===i?'selected':''}>${t[0]}</option>`).join('')}</select></div>`;
+ if(s===2){const H=[['dir','I know what I am making and who it is for'],['val','I have checked that people want it'],['make','The product is made (not necessarily ready to sell)'],['route','I have set up how customers pay and receive it (we will still confirm it can pay you out)'],['send','I have already shown it to people (we will still check the product and payment setup)']];
+  h+=`<h1>Where are you right now?</h1><div class=card><label><input type=checkbox id=none ${ob.have.length?'':'checked'} onchange="if(this.checked)document.querySelectorAll('.dn').forEach(c=>c.checked=false)"> Nothing yet. I am at the very beginning.</label>${H.map(([k,t])=>`<label><input type=checkbox class=dn value=${k} ${ob.have.includes(k)?'checked':''} onchange="if(this.checked)$('#none').checked=false"> ${t}</label>`).join('')}</div>`}
+ if(s===3)h+=`<h1>Your time</h1><div class=card><label>How much time do you usually have?<select id=mins>${[5,15,30,45].map(n=>`<option value=${n} ${(ob.mins||15)==n?'selected':''}>${n===45?'45 minutes or more':n+' minutes'}</option>`).join('')}</select></label><label>Where do you plan to sell? (optional)<input type=text id=route value="${v('route')}"></label></div>`;
+ return h+`${ob.redo?'<button onclick="st=ob.keep||load();ob={step:0,help:0,have:[]};render()">Cancel</button>':''}<button class=p onclick=ob_next()>${nxt}</button>`}
+function rd(){const g=i=>$('#'+i)&&$('#'+i).value.trim(),s=ob.step;if(s===0){ob.idea=g('idea');ob.buyer=g('buyer')}if(s===1)ob.ti=+$('#ti').value;if(s===2)ob.have=[...document.querySelectorAll('.dn:checked')].map(c=>c.value);if(s===3){ob.mins=+$('#mins').value;ob.route=g('route')}}
+function ob_back(){rd();ob.step--;render()}
+function ob_next(){rd();if(ob.step===0){if(!ob.idea)return alert('Type what you want to make.');if(!ob.buyer)return alert('Say who it is for. A rough answer is fine, like "busy moms with toddlers".')}
+ if(ob.step<3){ob.step++;return render()}
+ if(ob.keep){st=ob.keep;Object.assign(st,{idea:ob.idea,buyer:ob.buyer||'',ti:+ob.ti||0,route:ob.route||'',mins:ob.mins||15,view:'home'});const I2={dir:['dir'],val:['dir','val'],make:['dir','outline','make'],route:['dir'],send:['dir','outline','make','listing','reach','send']};ob.have.forEach(k=>(I2[k]||[]).forEach(i=>A(i).done=1));if(ob.have.includes('route')||ob.have.includes('send'))A('route').claimed=1;ob={step:0,help:0,have:[]};save();return render()}
+ const old=st;st={v:2,idea:ob.idea,buyer:ob.buyer||'',ti:+ob.ti||0,route:ob.route||'',mins:ob.mins||15,a:{},blocker:null,pause:null,offered:null,last:td(),view:'home',tm:null,exp:null};
+ const IMP={dir:['dir'],val:['dir','val'],make:['dir','outline','make'],route:['dir'],send:['dir','outline','make','listing','reach','send']};ob.have.forEach(k=>(IMP[k]||[]).forEach(i=>A(i).done=1));if(ob.have.includes('route')||ob.have.includes('send'))A('route').claimed=1;save();render()}
+function bar(x){const dn=ACTS.filter(a=>A(a.id).done).length;return `<div class=dots>${STG.map((_,i)=>`<span class="${i<=x.s?'on':''}"></span>`).join('')}</div><p class=m>Stage ${x.s+1} of 6: ${STG[x.s]}. Goal: your first sale. ${dn?dn+' step'+(dn>1?'s':'')+' finished.':''}</p>`}
+function nav(){return ''}
+function home(){const T=td();
+ if(st.pause&&st.pause>T)return `<h1>Paused until ${E(st.pause)}</h1><p>Your progress is saved.</p><button class=p onclick="st.pause=null;go('home')">Resume now</button>`;
+ let h=window.NS?'<div class=n>Your browser is not saving progress (private mode or blocked storage). Keep this tab open, or use a normal window.</div>':'';if(gap>=2)h+=`<div class=n>Welcome back. Nothing was lost.</div>`;gap=0;
+ if(st.blocker)h+=`<div class=n><b>In the way:</b> ${E(BLN[st.blocker.t])}.<br>${E(BL[st.blocker.t])}<br><button onclick="st.blocker=null;go('home')">This is sorted</button></div>`;
+ const x0=next();
+ if(!x0)return h+(ACTS.some(a=>!A(a.id).done)?`<h1>The next step is waiting on what is in the way</h1>`:`<h1>You made your first sale.</h1><p>Well done. Next: check that the buyer received what you promised, ask if anything was unclear, and note what helped them find and buy it. Do not assume it will repeat on its own.</p><button onclick="sv=null;go('stuck')">I'm stuck</button>`)+nav();
+ if(x0.obs)return h+bar(x0)+obsV()+nav();
+ st.offered=x0.id;save();const a=A(x0.id),x=ea(x0),m=mins(),ri=m>=x.min?0:m>=x.min/2?1:2,ds=DL(x),all=ds.every((_,i)=>a.checks[i]);
+ h+=bar(x0)+`<div class=card><span class=m>Today's one thing · about ${x.min} minutes · ${E(x0.fr)}</span><h1>${E(x.t)}</h1><p>${E(F(x0.why))}</p>`;
+ if(a.window)h+=`<p class=m>Your work window: ${E(a.window)}</p>`;
+ if(a.misses===1)h+=`<p class=n>Still today's one. Its help is open below.</p>`;
+ if(a.misses===2)h+=`<div class=n>This has been waiting a while. What is in the way? <button onclick="sv=null;go('stuck')">Tell me</button></div>`;
+ if(a.misses>=3)h+=`<div class=n><p>The same approach is not working. Pick one:</p><label>Schedule a window <input type=text id=win placeholder="e.g. Thursday 9pm" value="${E(a.window||'')}"></label><button onclick=sched()>Save</button>
+ ${x0.alt&&!a.alt?`<button onclick="A('${x0.id}').alt=1;A('${x0.id}').checks=[];go('home')">Simpler route</button>`:''}${x0.step&&!a.stepUsed?`<button onclick="A('${x0.id}').stepUsed=1;A('${x0.id}').stepDay='${T}';go('home')">One small piece first</button>`:''}
+ <br><label>Or pause until <input type=date id=pd></label><button onclick=pauseIt()>Pause</button></div>`;
+ if(a.stepUsed&&a.stepDay===T&&!a.stepDone)return bar(x0)+`<div class=card><span class=m>A small piece for today</span><h1>${E(x0.step.t)}</h1><p>It feeds "${E(x0.t)}", which comes back tomorrow.</p>${x0.step.d.map(E).join('<br>')}<textarea rows=4 id=stp>${E(a.stepText||'')}</textarea><button class=p onclick="A('${x0.id}').stepText=$('#stp').value;A('${x0.id}').stepDone=1;go('home')">Done</button></div>`;
+ h+=`<p class=m>Time you have today:</p>${[5,15,30,45].map(n=>`<button class="${m===n?'p':''}" onclick="st.tm={d:'${T}',m:${n}};go('home')">${n===45?'45+':n} min</button>`).join('')}
+ <div class=n><b>${x0.one&&m<x.min?'Needs one sitting:':'Today\'s piece:'}</b> ${x0.one&&m<x.min?'This needs about '+x.min+' minutes in one go. Choose a longer time above, or pick a window under "I\'m stuck".':E(F(x.lad[ri],a))}<br><span class=m>A piece is progress, not completion. The task is done only when every box below is ticked.</span>${x0.one&&m<x.min?'':`<br><button onclick="piece('${x0.id}')">I did this piece</button>`}${a.part?` <span class=m>${a.part} piece${a.part>1?'s':''} saved. Not complete yet. Come back and tick the boxes below when it is finished.</span>`:''}</div>
+ <h2>Done looks like</h2>${ds.map((t,i)=>`<label><input type=checkbox ${a.checks[i]?'checked':''} onchange="tick('${x0.id}',${i},this.checked)"> ${E(t)}</label>`).join('')}
+ <p class=n id=gn ${all?'':'hidden'}>That meets the standard. Mark it complete and move on.</p>
+ <h2>Your work</h2><textarea rows=5 oninput="A('${x0.id}').draft=this.value;save()" placeholder="Paste or write what you have. ${window.NS?'This is NOT being saved on this device.':'It is saved on this device.'}">${E(a.draft)}</textarea>
+ <button class=p id=cb ${all?'':'disabled'} onclick="fin('${x0.id}')">Mark complete</button><button onclick="sv=null;go('stuck')">I'm stuck</button></div>`;return h+nav()}
+function tick(id,i,v){const a=A(id);a.checks[i]=!!v;save();const x=id==='exp'?expA():X(id);if(!x)return;const ok=DL(ea(x)).every((_,j)=>a.checks[j]),b=$('#cb'),g=$('#gn');if(b)b.disabled=!ok;if(g)g.hidden=!ok}
+function fin(id){const x=id==='exp'?expA():X(id);if(!x)return go('home');const a=A(id),ds=DL(ea(x));if(!ds.every((_,i)=>a.checks[i]))return alert('Tick every box first. That is how the app knows it is really done.');
+ a.done=1;a.misses=0;st.lastDone=id;st.order=st.order||[];if(id!=='exp')st.order.push(id);if(id==='exp'){st.exp=null;delete st.a.exp}go('fin')}
+function finV(){const id=st.lastDone,x=X(id),n=next(),nx=x?x.nx:'Done. Next: say what happened.';return `<div class=card><h1>Done.</h1><p>${E(nx||'')}</p>${n?`<p class=m>Up next: ${E(n.t)}</p>`:''}<button class=p onclick="go('home')">Continue</button></div>`}
+function obsV(){window.ob2=()=>{const r=document.querySelector('input[name=o]:checked');if(!r)return alert('Choose the closest one.');if(r.value==='sale'){if(!confirm('Record that you made a sale? Only choose this if a buyer has actually paid.'))return;A('obs').done=1;return go('home')}st.exp=r.value;delete st.a.exp;go('home')};
+ return `<div class=card><span class=m>Today's one thing</span><h1>Say what you have seen so far</h1><p>Your next step depends on what actually happened. Pick the closest.</p>${OBS.map(o=>`<label><input type=radio name=o value=${o[0]}> ${o[1]}</label>`).join('')}<button class=p onclick=ob2()>Give me my next step</button><button onclick="sv=null;go('stuck')">I'm stuck</button></div>`}
+function sched(){const v=$('#win').value.trim();if(!v)return alert('Type a day and time.');A(st.offered).window=v;go('home')}
+function pauseIt(){const v=$('#pd').value;if(!v||v<=td())return alert('Choose a return date after today.');st.pause=v;go('home')}
+const HELP={
+dir:[`Write one sentence that tells someone three things:
+
+* What you're making.
+* Who it's for.
+* What it helps that person do or solve.
+
+Don't explain your whole business. You're simply describing your product so another person can understand it.
+
+Your sentence:
+
+I'm making a [product] for [specific person] who wants to [result or problem solved].`,
+`You don't need to write a perfect sentence. Fill in these three blanks:
+
+* My product is: What are you making?
+* It's for: Who would actually use or buy it?
+* It helps them: What do they want to achieve, or what problem do they want to solve?
+
+Now combine your answers into one sentence.
+
+If you can't fill in all three blanks, work on the missing part first.`,
+`You don't have to make the perfect choice right now. You just need a clear enough description to move forward.
+
+Choose the product you are most willing to finish, the person you understand best, and the main result your product will help them achieve.
+
+Don't compare more ideas. Make your choice and write the sentence. You can refine it later.`,
+`Look at the three things this sentence needs:
+
+* What your product is.
+* Who it's for.
+* What it helps them do or solve.
+
+Which one can't you answer yet?
+
+Work on that part only. You don't need to complete the rest of the sentence until you have a reasonable answer.
+
+If you already know all three, put them together. You don't need anything else to write your first sentence.`,
+`You don't need a long work session for this.
+
+Spend five minutes writing a rough sentence. If you can't complete it, write down whichever parts you know already.
+
+Today's goal is to make progress on the sentence, not perfect it.`,
+`You might be putting pressure on yourself to get this right. But this is a working sentence, not a permanent promise about what your business must become.
+
+Give yourself two minutes. Write the simplest version you can, even if the wording feels awkward.
+
+You are allowed to change the sentence later. For now, give yourself something clear enough to work with.`],
+val:[`You are looking for signs that people want something like your product.
+
+Look for products similar to yours that people are buying, questions from people looking for a solution, or people asking for something your product could provide.
+
+You are not trying to prove that your product will sell. You are looking for enough evidence to make a reasonable decision about whether to continue.`,
+`Start where your potential buyer already looks for products or asks questions.
+
+1. Search for products similar to yours.
+2. Look for signs of demand, such as reviews, sales indicators where available, or people asking for that kind of solution.
+3. Write down what you find and what it tells you.
+
+You only need a few concrete examples to make your next decision. Set a time limit so this task doesn't turn into endless research.`,
+`You don't need certainty. You need to decide what to do next based on what you have found.
+
+Ask yourself:
+
+* Have I found any credible signs that people want something like this?
+
+If you have reasonable evidence, continue to creating your first version.
+
+If you have found very little, don't automatically assume nobody wants it. Try one more focused way of checking demand before deciding.`,
+`What is preventing you from checking whether people want your product?
+
+* I don't know where to look: Start with one place where your potential buyers shop, search, or ask questions.
+* I can't find similar products: Search using the problem your product solves, not just the name of your product.
+* I can't tell whether people actually want it: Look for concrete signs, such as reviews, sales indicators, or people asking for a solution. Remember that a product existing doesn't automatically mean it sells.
+* I can't access the information I need: Choose another place to look rather than spending all your time trying to access one source.
+
+Choose the closest obstacle and take that next step.`,
+`You don't need to research everything today.
+
+Spend five minutes looking for one credible sign that people want something like your product.
+
+Write down what you found and where you found it.
+
+That's today's progress. You can continue your check later, but don't treat one example as proof that your product will sell.`,
+`You don't need to know whether your product will succeed before you begin.
+
+For the next five minutes, look for one real example of someone buying, searching for, or asking for something similar to what you want to make.
+
+Write down what you find. Don't redesign your product, start a new idea, or open ten different research tabs.
+
+Your job right now is simply to gather evidence and make a better-informed decision.`],
+outline:[`Think about what your buyer should be able to do or achieve after using your product.
+
+List the essential pieces your product needs to deliver that result.
+
+Include what the buyer genuinely needs, not everything you could possibly add.`,
+`Start with the result your product promises to help the buyer achieve.
+
+1. Write down what the buyer needs to do to achieve that result.
+2. Identify what your product must contain to help them do it.
+3. List those pieces in the order the buyer will need them.
+
+Aim for around five essential items to start. You can add more if the product genuinely needs them.`,
+`When you're unsure whether something belongs in your product, ask yourself:
+
+Would the buyer struggle to get the promised result without this?
+
+If yes, include it.
+
+If no, put it aside for later.
+
+You don't need to add bonuses, extra pages, or additional features to make the product feel more valuable. Focus on delivering what you promised.`,
+`Look at the result you want your product to deliver.
+
+What would your buyer need that isn't on your list yet?
+
+If you know what's missing, add it.
+
+If you're unsure, look at your product promise again and work backwards from the result. Identify the essential information, tools, or components the buyer would need.
+
+Don't start designing or creating the product yet. Finish the list first.`,
+`You don't have to finish the entire list today.
+
+Spend five minutes writing down the first three things your product needs to include.
+
+Start with the essentials. You can finish and organise the list when you have more time.`,
+`You might be making this task bigger than it needs to be.
+
+You are not creating the product yet. You're simply deciding what needs to go into it.
+
+Write down three essential items. Don't worry about the wording, design, or whether the list looks professional.
+
+You can refine the list later. For now, give yourself a clear starting point.`],
+make:[`Your first sellable version is the simplest complete version of your product that a buyer can actually use.
+
+Use the list you made in the previous task. Create the essential parts needed to deliver the result you promised. Don't add extras or try to make it perfect. The goal is to have a product that is ready for someone to use.`,
+`Start with the first item on your list and create it. Then move to the next one.
+
+Keep going until you've created all the essential parts of your product. Use whatever tool you can already work with. You don't need to learn a new tool or find a better one before you begin.`,
+`When you're unsure how to make something, choose the simplest approach that will let your buyer use it.
+
+When you're unsure whether to include something, return to your list of essentials. If it isn't needed to deliver the promised result, leave it out for now.
+
+Make the decisions needed to finish this version. You can improve it later.`,
+`Identify what's actually stopping you from creating the product.
+
+* Missing information: Find only the information you need to complete the part you're working on.
+* Missing tool or resource: Find a simple alternative you can use now.
+* A technical problem: Solve the specific problem blocking your progress rather than starting over.
+* An unfinished earlier task: Return to that task and complete the missing part.
+
+Once the obstacle is addressed, continue creating your product.`,
+`You don't have to finish the entire product in one sitting.
+
+Choose one essential part of your product and work on that alone. Before you stop, save your progress and note the next part you need to create.
+
+The goal is to keep the product moving towards completion.`,
+`Don't focus on finishing the whole product right now.
+
+Open your work and spend five minutes creating one small part. It doesn't have to look polished yet. You can improve it once the essential content exists.
+
+Start with the next item on your list and keep going.`],
+ready:[`Check whether someone can use your product as intended.
+
+Go through the product from the buyer's point of view. Look for missing information, broken elements, confusing instructions, or anything that prevents the buyer from getting the result you promised.
+
+Fix problems that affect usability before worrying about small cosmetic details.`,
+`Open your product and go through it as if you were using it for the first time.
+
+Check each part in order. Make sure the information is understandable, the necessary pieces are present, and any links, files, or interactive elements work.
+
+Write down any problems you find, then fix them one at a time.`,
+`When you find something you might change, ask yourself:
+
+Would this stop the buyer from using the product or getting the promised result?
+
+If yes, fix it before moving on.
+
+If it's only a minor design preference or an improvement that can wait, leave it for later.
+
+Your goal is a usable product, not a perfect one.`,
+`Identify the specific problem preventing you from checking the product.
+
+* Something is incomplete: Finish the missing essential part.
+* Something doesn't work: Test the affected part and fix the problem.
+* Something is confusing: Rewrite or adjust the part that is difficult to understand.
+* You cannot test a feature yourself: Find a practical way to check it, or ask someone to try that specific part if possible.
+
+Fix the issue that affects the buyer first.`,
+`You don't have to check every detail today.
+
+Spend five minutes testing one important part of your product. Choose a part the buyer needs to use to get the promised result.
+
+Fix any obvious problem you find, or write down the next issue to address.`,
+`You don't have to judge your entire product at once.
+
+Open it and test the first part a buyer would use. Look for one thing that works and one thing that needs fixing.
+
+Address the most important problem you find. This is about making the product usable, not proving that every detail is perfect.`],
+route:[`Choose a way for customers to pay for your product and receive it after purchase.
+
+You need a selling method that lets a buyer complete the purchase and access what they paid for.
+
+Focus on getting these two things working. You don't need a complicated website or a complete online business setup to begin.`,
+`Start with a selling platform or payment method you can realistically use.
+
+Check that it supports your location, allows you to receive payments, and provides a way to deliver your product to the buyer.
+
+Choose the simplest suitable option, set up the product or payment instructions, and make sure the buyer knows how to receive it.`,
+`Don't spend days comparing platforms.
+
+Choose an option that you can access, afford, and use to accept payment and deliver your product.
+
+If one option meets those needs, use it. You can change your setup later if your business grows or your needs change.`,
+`Identify what is preventing you from setting up the purchase process.
+
+* The platform isn't available to you: Look for another option that supports your location.
+* You cannot receive payments: Check which payment methods are supported and choose a workable alternative.
+* You don't know how to deliver the product: Use the simplest delivery method your chosen platform supports.
+* You need information or verification: Identify the specific requirement and complete that step before continuing.
+
+Solve the obstacle that is blocking your setup rather than researching every possible platform.`,
+`You don't have to complete the entire selling setup in one sitting.
+
+Choose one step, such as checking platform availability, setting up your product, or configuring payment or delivery.
+
+Complete that step and note what remains.`,
+`You don't need to build a perfect storefront before you can sell.
+
+Open the selling platform or payment option you've chosen and complete the next unfinished step.
+
+Focus on making it possible for a customer to pay and receive the product. Leave optional customisation for later.`],
+listing:[`Write a clear description that helps a potential buyer understand what you're selling and why it may be useful to them.
+
+Explain what the product is, who it is for, what it helps them do, and what they receive when they buy it.
+
+End with a clear instruction telling them how to purchase it.`,
+`Start with the sentence you wrote about your product.
+
+Use it to write a short sales message that answers these questions:
+
+* What is the product?
+* Who is it for?
+* What does it help the buyer do?
+* What will the buyer receive?
+* How can the buyer purchase it?
+
+Keep the wording clear and honest. You don't need to be a professional copywriter.`,
+`Don't keep rewriting the message in search of perfect wording.
+
+Choose the clearest version that explains the product, its intended buyer, its main benefit, and how to buy it.
+
+Make sure your claims are accurate. Save the message and move forward. You can improve it after you see how people respond.`,
+`Check what is stopping you from completing the message.
+
+* You don't know what to say: Return to your product description and identify the main result it helps deliver.
+* You don't know what to include: Explain the product, its benefit, what the buyer receives, and how to purchase it.
+* You don't know the price: Decide on a price before publishing the offer.
+* You don't have a purchase link: Finish the relevant selling setup first.
+
+Address the missing piece, then complete the message.`,
+`You don't need to write a long sales page today.
+
+Spend five minutes writing a short message that explains what the product is, who it helps, and how someone can buy it.
+
+You can improve the wording later. For now, get a clear first version written.`,
+`You don't have to write a clever or persuasive sales message.
+
+Write a straightforward explanation of what you made, who it is for, and how someone can buy it.
+
+You have already done the work of creating the product. Now give people a clear way to understand the offer.`],
+buytest:[`Test the buying process as if you were a customer.
+
+Check that the purchase process works, that the payment step behaves as expected, and that the buyer can access the product after purchase.
+
+You want to catch problems before a real customer encounters them.`,
+`Follow the purchase process from the beginning.
+
+Open the product listing or purchase link, follow the available checkout steps, and check what happens after the purchase.
+
+If your platform provides a test mode, use it. Otherwise, check whether it offers a safe way to test the process without making an unnecessary real purchase.
+
+Confirm that the buyer can access the product as intended.`,
+`You don't need to test every possible scenario.
+
+Focus on the main customer journey: finding the offer, completing the purchase, and receiving the product.
+
+If those steps work, address any remaining important problems you know about. Don't delay selling just to test minor details that won't affect the buyer's experience.`,
+`Identify the step where the process breaks down.
+
+* The purchase link doesn't work: Check the link and the product's published status.
+* Checkout isn't available: Check your payment and product settings.
+* The product isn't delivered: Check the delivery settings and the instructions the buyer receives.
+* You cannot test without paying: Check whether the platform offers a test mode or another safe way to verify the process.
+
+Fix the specific problem and test the affected step again.`,
+`You don't have to inspect every setting.
+
+Spend five minutes checking the purchase link and the next step a buyer would take.
+
+If you can continue through the process, check product delivery next. Record anything that still needs attention.`,
+`Testing can feel uncomfortable when you're worried something might be wrong.
+
+But finding a problem now gives you a chance to fix it before a customer encounters it.
+
+Start with the purchase link. Follow the process as far as you safely can and address the first problem you find.
+
+You don't need to test everything at once.`],
+reach:[`Choose one place where people who might want your product can realistically discover it.
+
+This could be a relevant online community, a social platform, a marketplace, an existing audience, or direct contact with appropriate potential buyers.
+
+Then write a short message that introduces your product and explains why it may be useful to them.
+
+Choose one realistic route rather than trying to promote everywhere.`,
+`Think about where your intended buyers already spend time or look for solutions.
+
+Choose one place you can access and use without needing to build a large audience first.
+
+Write a message that explains what your product helps with and where interested people can find it.
+
+Make sure your message follows the rules of the platform or community you choose.`,
+`Choose the route that makes it easiest to reach relevant people with the resources you have now.
+
+Consider where your potential buyers are, whether you can access that place, and whether you can share your offer there appropriately.
+
+Pick one route and commit to trying it. You can explore other routes later if needed.`,
+`Identify what is preventing you from choosing a route or writing your message.
+
+* You don't know where your buyers are: Return to what you know about your intended buyer and identify one place they are likely to look for help or products.
+* You don't have an audience: Choose a relevant place where you can reach people beyond your own followers, if the rules allow it.
+* You don't know what to say: Explain the problem your product helps with, what it offers, and where to find it.
+* Your chosen platform doesn't allow promotion: Choose another suitable route rather than breaking its rules.
+
+Solve the specific obstacle and continue.`,
+`You don't need to plan a complete marketing strategy.
+
+Spend five minutes choosing one realistic place to reach potential buyers and drafting a short message.
+
+You can refine the message later. The goal is to prepare one practical way to get the offer in front of people.`,
+`You don't have to promote your product on every platform or build a large following first.
+
+Choose one place where your intended buyers might see your offer. Write a simple message explaining what the product does and where to find it.
+
+Keep the task small enough to complete. You're preparing to show people what you've made, not committing to a complicated marketing plan.`],
+send:[`Share your offer using the route you chose.
+
+Publish your listing, post your message, or send it to the appropriate people, depending on your chosen method.
+
+Make sure people can access the offer and understand how to buy it.
+
+The goal is to give real potential buyers an opportunity to see what you're selling.`,
+`Open the place where you decided to share your offer.
+
+Use the message you prepared, include the correct purchase link or instructions, and publish or send it.
+
+Before you finish, check that the message is visible to its intended audience and that the purchase link works.`,
+`You have already chosen a route and prepared your message.
+
+Use that decision rather than starting the planning process again.
+
+Share the offer through the route you selected. You can evaluate the results after people have had a chance to see it.`,
+`Identify the specific obstacle preventing you from sharing the offer.
+
+* Your message isn't ready: Finish the missing information and use the clearest version you have.
+* Your purchase link is missing or broken: Return to your selling setup and fix it.
+* The platform won't let you post: Check the relevant requirements or use another suitable route.
+* You're waiting for a particular resource: Determine whether it is essential to sharing the offer. If it isn't, proceed without it.
+
+Address the obstacle that actually prevents you from putting the offer in front of people.`,
+`You don't have to launch a full campaign.
+
+If your offer and purchase process are ready, spend five minutes taking the next step to share it.
+
+That might mean publishing the listing, posting your message, or sending it to an appropriate potential buyer.
+
+If you cannot finish the whole action, prepare everything you need to complete it in your next work session.`,
+`You've done the work of making a product and preparing an offer. The next step is to let potential buyers see it.
+
+Choose the smallest appropriate action that gets the offer in front of someone.
+
+Publish the post, share the listing, or send the message. Follow the rules of the place you're using.
+
+You don't need to feel completely confident before taking this step.`],
+obs:[`Look at what has happened since you put your offer in front of people.
+
+Identify what you have actually observed. For example, people may not have seen the offer, they may have seen it without responding, they may have shown interest without buying, or someone may have purchased.
+
+Use the evidence you have rather than guessing what people think.`,
+`Check the information available to you.
+
+Look at any views, replies, questions, clicks, conversations, or purchases you can access.
+
+Write down what you know happened. If you don't have enough information to tell whether people saw the offer, say so.
+
+You are identifying what happened so you can choose a sensible next step.`,
+`Don't try to explain every possible reason behind the results.
+
+First, identify the clearest thing you know:
+
+* People haven't seen the offer.
+* People have seen it but haven't responded.
+* People have shown interest but haven't purchased.
+* People have given feedback.
+* Someone has purchased.
+* You don't have enough information to tell.
+
+Choose the description that best matches what you observed. You don't need to draw a bigger conclusion yet.`,
+`What information do you need to understand what happened?
+
+* You don't know whether people saw the offer: Check the available views, reach, or delivery information.
+* You cannot tell whether people responded: Review the replies, comments, messages, or other responses you received.
+* You cannot tell whether anyone purchased: Check your sales or order information.
+* You have no useful information available: Record what you know and acknowledge what you cannot yet determine.
+
+Use the information you can access. Don't invent an explanation for the results.`,
+`You don't need to conduct a detailed analysis.
+
+Spend five minutes checking what happened after you shared your offer.
+
+Write down the clearest observation you can make. If you haven't had enough time to gather meaningful information, record that and review it later.`,
+`You don't have to decide whether your product is a success or failure today.
+
+Simply look at what happened after you shared it.
+
+Record the most obvious observation without judging yourself or your product. The purpose is to choose your next action based on what you know, not on what you fear might be true.`],
+unseen:[`Your next step is to get the offer in front of relevant people.
+
+Return to the route you chose for reaching potential buyers. Make sure your offer is accessible and take the next action needed to share it.`,
+`Open the platform or channel you chose.
+
+Prepare your message, include the purchase link or instructions, and publish or send the offer in a way that reaches your intended audience.`,
+`You have already chosen a route. Use that route for now instead of researching more options.
+
+Take the next step to share your offer. You can consider another route after you have tried this one.`,
+`Identify what is preventing you from sharing the offer.
+
+Fix the specific issue with your message, link, access, or chosen platform. If the original route is not workable, choose another realistic way to reach potential buyers.`,
+`Spend five minutes preparing the next step needed to share your offer.
+
+If possible, complete the action. Otherwise, leave your message and link ready so you can finish quickly next time.`,
+`Choose one small action that will make your offer visible to potential buyers.
+
+Prepare the post, publish the listing, or send the message. Focus on sharing the offer rather than planning more ways to promote it.`],
+ignored:[`You have put the offer in front of people, but you haven't received a response yet.
+
+Check whether the message makes it clear what the product does, who it is for, and why someone might want it.
+
+If the message is unclear, improve that specific part. If it is clear, consider whether you need to reach more relevant people before drawing conclusions.`,
+`Read your offer as if you were seeing it for the first time.
+
+Can you quickly understand what the product is, who it helps, and how to buy it?
+
+If not, make the message clearer. If it already communicates those things, focus on reaching relevant potential buyers rather than repeatedly rewriting the same message.`,
+`Don't assume that no response means nobody wants your product.
+
+Check whether the offer is clear and whether the people who saw it are likely to be the right buyers.
+
+Make one reasonable adjustment if needed. Otherwise, continue getting the offer in front of relevant people and observe what happens.`,
+`Identify the most likely issue you can actually address.
+
+* The offer is unclear: Improve the description.
+* The intended buyer is not obvious: Make it clearer who the product is for.
+* The purchase instructions are difficult to find: Make the next step easier to understand.
+* You don't know whether the right people saw it: Try a more relevant audience or channel.
+
+Address one issue at a time. Don't change everything without a clear reason.`,
+`Spend five minutes reviewing your offer.
+
+Identify one part that could be clearer and make that adjustment. If the message is already clear, prepare to share it with another relevant group of potential buyers.`,
+`It can be uncomfortable to share something and receive no response.
+
+But you don't need to decide what the silence means yet.
+
+Review your message once, make one useful improvement if needed, and take the next reasonable step towards reaching potential buyers.`],
+nobuy:[`Interest means someone has shown some level of curiosity, but it doesn't necessarily mean they are ready to buy.
+
+Look at what interested people have said or asked. Identify whether they need clarification about the product, its contents, its price, or how to purchase it.
+
+Use what you learn to address the actual concern rather than changing the whole product immediately.`,
+`Review the questions or comments you received.
+
+Look for anything that suggests uncertainty about what the product includes, what it helps with, its price, or how to buy it.
+
+If someone has asked a question, respond clearly. If a common concern appears, make the relevant information easier to find in your offer.`,
+`Don't immediately lower the price, add bonuses, or create a different product.
+
+First, identify what you know about the people who showed interest.
+
+If they expressed a specific concern, address it. If they simply showed interest without buying, make sure the offer and purchase process are clear and continue observing how people respond.`,
+`Identify what may be preventing interested people from completing a purchase.
+
+* They don't understand what they receive: Clarify the product contents.
+* They don't understand the benefit: Make the intended result clearer without promising something the product cannot deliver.
+* They have a question or concern: Respond to it honestly.
+* The purchase process is confusing or broken: Check the purchase link and checkout process.
+* You don't know why they haven't bought: Don't invent a reason. Look for more information through appropriate questions or further observations.
+
+Address what you can establish rather than guessing.`,
+`Spend five minutes reviewing the questions or responses you received.
+
+Identify one concern or point of confusion you can address. Make that improvement or prepare a clear response.
+
+You don't need to redesign the product today.`,
+`You don't have to convince anyone to buy.
+
+Look at what interested people have actually said. If someone has asked a question, answer it clearly. If your offer is missing important information, add it.
+
+Then give potential buyers a clear opportunity to purchase without pressuring them.`],
+told:[`Review the feedback and identify what the person is actually telling you.
+
+Determine whether it points to a problem with the product, something that is unclear, a missing essential element, or simply a personal preference.
+
+Use the feedback to decide whether a change is genuinely needed. You don't have to act on every suggestion.`,
+`Read the feedback and identify the specific part of your product or offer it refers to.
+
+If it identifies a clear problem, decide what change would address that problem. If the feedback is vague, seek clarification when appropriate.
+
+Make the necessary adjustment and check that it improves the buyer's experience.`,
+`Ask yourself whether the feedback reveals a problem that prevents the buyer from getting the promised result.
+
+If it does, address it.
+
+If it is a personal preference or an optional improvement, you can leave it for later.
+
+Use feedback to make your product more useful, not to add every possible feature.`,
+`Identify what you need to act on the feedback.
+
+* The feedback is unclear: Ask what the person meant, if possible.
+* You understand the problem but don't know the solution: Work on the smallest change that addresses it.
+* The change requires a resource you don't have: Look for a practical alternative.
+* The suggestion would make the product unnecessarily complicated: Consider whether it is essential to the result you promised.
+
+Address the most important issue you can reasonably solve.`,
+`Choose one piece of feedback that matters most to the buyer's ability to use the product.
+
+Spend five minutes deciding how to address it or making a small improvement.
+
+You can work on optional changes later.`,
+`Feedback doesn't mean you have failed. It gives you information about how someone experiences your product.
+
+Choose one useful point from the feedback and decide what to do about it.
+
+You don't have to rebuild everything. Make the change that matters most, if a change is genuinely needed.`],
+unknown:[`You don't yet have enough information to understand how people are responding to your offer.
+
+Your next step is to gather a little more useful information. Check whether people are seeing the offer, whether they are responding, and whether anyone is trying to purchase.
+
+Don't make a major decision based on information you don't have.`,
+`Start with the information available to you.
+
+Check the views or reach provided by your platform, review any replies or messages, and look at your sales information.
+
+If those details aren't available, record what you can observe and choose a practical way to get the offer in front of relevant people again.`,
+`You don't have to decide whether your product is working yet.
+
+Identify what you still need to know. Then take one action that could provide that information, such as sharing the offer with a relevant audience or checking the available activity data.
+
+Make your next decision when you have something more concrete to work with.`,
+`Identify which information you cannot access.
+
+* You cannot see whether people viewed the offer: Check the platform's available activity information.
+* You cannot tell whether anyone responded: Review the places where you shared it.
+* You cannot confirm purchases: Check your sales or order records.
+* No useful information is available: Choose a practical way to reach relevant people and observe the response.
+
+Work with what you can establish. Don't assume that no information means no interest.`,
+`Spend five minutes checking whatever information is available.
+
+Write down what you know and what remains unknown. If you cannot determine the result yet, make a note to review it after you have more information.`,
+`You don't need to decide whether your product is succeeding or failing right now.
+
+Simply check what information you have. Write down what happened and what you still don't know.
+
+Your next step is to gather useful information, not to judge yourself.`],
+sale:[`A sale means someone has paid for your product.
+
+Your immediate priority is to make sure the buyer receives what they purchased and can access it as intended.
+
+After that, note what helped the buyer find or purchase the product. You can use what you learn to decide what to do next.`,
+`Check that the purchase is recorded and that the buyer has received the product or the correct delivery instructions.
+
+If delivery is automatic, verify that the process worked as expected. If delivery is manual, complete it promptly.
+
+Once the buyer has access, record the sale and note how the buyer found your offer if you know.`,
+`Don't feel pressured to create a new product or expand your business immediately.
+
+First, make sure the buyer receives what they paid for.
+
+Then decide whether your next step is to continue sharing the current offer, improve something based on the experience, or gather feedback when appropriate.
+
+You can keep working with the product you already have.`,
+`Identify what still needs attention after the sale.
+
+* The buyer hasn't received the product: Check the delivery process and resolve the issue.
+* The buyer cannot access the product: Provide the correct access instructions or fix the delivery problem.
+* You don't know how the buyer found you: Record the sale and ask about the source when appropriate.
+* You don't know what to do next: Make sure the transaction and delivery are complete, then continue with your existing offer.
+
+Resolve any issue affecting the buyer first.`,
+`Prioritise anything the buyer needs, especially product delivery or access.
+
+Once that is handled, spend a few minutes recording the sale and noting anything useful you learned.
+
+You don't need to plan your entire next business stage today.`,
+`You have made a sale. Now focus on looking after the buyer.
+
+Confirm that they have what they paid for and resolve any access issues. You don't have to make a big decision about the future of your business right now.
+
+Complete the immediate responsibility, then choose your next step.`]};
+function md(t){return t.split('\n\n').map(b=>{const L=b.split('\n');if(L.every(l=>l.startsWith('* ')))return '<ul>'+L.map(l=>'<li>'+E(l.slice(2))+'</li>').join('')+'</ul>';if(L.every(l=>/^\d+\. /.test(l)))return '<ol>'+L.map(l=>'<li>'+E(l.replace(/^\d+\. /,''))+'</li>').join('')+'</ol>';return '<p>'+L.map(E).join('<br>')+'</p>'}).join('')}
+function stuck(){const x0=next(),key=x0?(x0.obs?'obs':x0.id==='exp'?st.exp:x0.id):(A('obs').done?'sale':null),H=HELP[key];
+ if(!H)return `<p>Nothing to be stuck on right now.</p><button onclick="go('home')">Back</button>`;
+ const t=x0?ea(x0).t:'You made a sale',I={und:0,how:1,dec:2,miss:3,time:4,avoid:5};
+ if(sv==='blk')return `<h1>${E(t)}</h1><p>What is in the way?</p>${Object.keys(BLN).map(k=>`<button onclick="st.blocker={t:'${k}',a:'${x0?x0.id:''}'};go('home')">${E(BLN[k])}</button>`).join('')}<p><button onclick="sv='miss';render()">Back</button></p>`;
+ if(sv&&sv in I)return `<h1>${E(t)}</h1>${md(H[I[sv]])}${sv==='miss'&&x0?`<p><button onclick="sv='blk';render()">Record what is in the way</button></p>`:''}${sv==='time'&&x0&&!x0.obs?`<p><button onclick="st.tm={d:'${td()}',m:5};go('home')">Set today to 5 minutes</button></p>`:''}<p><button class=p onclick="go('home')">Back to today's task</button><button onclick="sv=null;render()">Try another option</button></p>`;
+ const o=(k,t)=>`<button onclick="sv='${k}';render()">${t}</button><br>`;
+ return `<h1>What is closest?</h1><div class=card>${o('und','I do not understand what to do')}${o('how','I do not know how to do it')}${o('dec','I cannot decide')}${o('miss','Something is missing or in the way')}${o('time','I do not have enough time today')}${o('avoid','I am avoiding it')}</div><p class=m>These answers are written in advance. The app cannot read your mind, so pick whatever is nearest.</p><button onclick="go('home')">Back</button>`}
+function settings(){window.sv2=()=>{st.mins=+$('#sm').value;st.route=$('#sr').value.trim();go('home')};
+ window.rs=()=>{if(prompt('This erases everything. Type RESET to confirm.')==='RESET'){localStorage.removeItem(KEY);st=null;ob={step:0,help:0,have:[]};render()}};
+ window.rst=()=>{if(!confirm('Redo "where I am"? This clears all progress and written drafts for this project. Your answers about your product stay.'))return;ob={step:2,redo:1,help:0,have:[],idea:st.idea,buyer:st.buyer,ti:st.ti,mins:st.mins,route:st.route};st=null;render()};
+ return `<h1>Edit my answers</h1><div class=card><label>Usual time<select id=sm>${[5,15,30,45].map(n=>`<option value=${n} ${st.mins===n?'selected':''}>${n===45?'45 minutes or more':n+' minutes'}</option>`).join('')}</select></label><label>Where I plan to sell<input type=text id=sr value="${E(st.route)}"></label><button class=p onclick=sv2()>Save</button><button onclick="go('home')">Back</button></div>
+ <div class=card><b>Where I am</b><p class=m>Change what you have already finished. This clears progress and drafts for this project.</p><button onclick=rst()>Redo this</button></div>
+ <div class=card><b>Start fresh</b><p class=m>Erases this project from this browser.</p><button onclick=rs()>Erase everything</button></div>`}
+boot();
+</script></body></html>
